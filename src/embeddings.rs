@@ -1,6 +1,8 @@
 use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
 
 #[derive(Debug, Serialize)]
 struct OllamaEmbedRequest {
@@ -15,39 +17,23 @@ struct OllamaEmbedResponse {
 
 pub struct EmbeddingGenerator {
     client: Client,
-    ollama_url: String,
-    model: String,
+    use_simple: bool,
 }
 
 impl EmbeddingGenerator {
-    pub fn new(ollama_url: String, model: String) -> Self {
+    pub fn new(use_simple: bool) -> Self {
         Self {
             client: Client::new(),
-            ollama_url,
-            model,
+            use_simple,
         }
     }
 
     pub async fn generate_embedding(&self, text: &str) -> Result<Vec<f32>> {
-        let url = format!("{}/api/embeddings", self.ollama_url);
-        let request = OllamaEmbedRequest {
-            model: self.model.clone(),
-            prompt: text.to_string(),
-        };
-
-        let response = self
-            .client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await?;
-
-        if !response.status().is_success() {
-            anyhow::bail!("Ollama API error: {}", response.status());
+        if self.use_simple {
+            Ok(self.simple_embedding(text))
+        } else {
+            anyhow::bail!("Ollama embeddings not configured. Using simple embeddings.")
         }
-
-        let embed_response: OllamaEmbedResponse = response.json().await?;
-        Ok(embed_response.embedding)
     }
 
     pub async fn generate_embeddings(&self, texts: &[String]) -> Result<Vec<Vec<f32>>> {
@@ -57,6 +43,53 @@ impl EmbeddingGenerator {
             embeddings.push(embedding);
         }
         Ok(embeddings)
+    }
+
+    // Simple TF-IDF-like embedding for local use without external models
+    fn simple_embedding(&self, text: &str) -> Vec<f32> {
+        const EMBEDDING_DIM: usize = 384;
+        let mut embedding = vec![0.0; EMBEDDING_DIM];
+        
+        // Normalize text
+        let text_lower = text.to_lowercase();
+        let words: Vec<&str> = text_lower.split_whitespace().collect();
+        
+        if words.is_empty() {
+            return embedding;
+        }
+        
+        // Create a simple bag-of-words embedding
+        for word in &words {
+            let mut hasher = DefaultHasher::new();
+            word.hash(&mut hasher);
+            let hash = hasher.finish();
+            
+            // Map hash to multiple dimensions for better distribution
+            for i in 0..3 {
+                let idx = ((hash.wrapping_add(i as u64)) as usize) % EMBEDDING_DIM;
+                embedding[idx] += 1.0 / words.len() as f32;
+            }
+        }
+        
+        // Add character n-grams for better matching
+        for window in text_lower.chars().collect::<Vec<_>>().windows(3) {
+            let ngram: String = window.iter().collect();
+            let mut hasher = DefaultHasher::new();
+            ngram.hash(&mut hasher);
+            let hash = hasher.finish();
+            let idx = (hash as usize) % EMBEDDING_DIM;
+            embedding[idx] += 0.5 / (text_lower.len() as f32);
+        }
+        
+        // Normalize the embedding vector
+        let magnitude: f32 = embedding.iter().map(|x| x * x).sum::<f32>().sqrt();
+        if magnitude > 0.0 {
+            for val in &mut embedding {
+                *val /= magnitude;
+            }
+        }
+        
+        embedding
     }
 }
 

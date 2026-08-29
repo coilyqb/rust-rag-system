@@ -5,7 +5,7 @@ use crate::storage::{Document, DocumentStore};
 use anyhow::Result;
 use std::io::{self, Write};
 use std::path::Path;
-use walker::Walker;
+use walkdir::WalkDir;
 
 pub struct RagSystem {
     config: Config,
@@ -20,11 +20,8 @@ impl RagSystem {
         config.ensure_directories()?;
 
         let store = DocumentStore::load(&config.storage_path)?;
-        let embedder = EmbeddingGenerator::new(
-            config.ollama_url.clone(),
-            config.ollama_model.clone(),
-        );
-        let llm = LlmClient::new(config.ollama_url.clone(), config.ollama_model.clone());
+        let embedder = EmbeddingGenerator::new(config.use_simple_embeddings);
+        let llm = LlmClient::new(config.chat_url.clone());
 
         Ok(Self {
             config,
@@ -36,12 +33,11 @@ impl RagSystem {
 
     pub async fn index_directory(&mut self, path: &Path) -> Result<()> {
         println!("Scanning for JSON files...");
-        let walker = Walker::new(path);
         let mut documents = Vec::new();
 
-        for entry in walker.flatten() {
+        for entry in WalkDir::new(path).into_iter().filter_map(|e| e.ok()) {
             let path = entry.path();
-            if path.extension().and_then(|s| s.to_str()) == Some("json") {
+            if path.is_file() && path.extension().and_then(|s| s.to_str()) == Some("json") {
                 println!("Processing: {:?}", path);
                 match self.load_json_file(&path).await {
                     Ok(mut docs) => documents.append(&mut docs),

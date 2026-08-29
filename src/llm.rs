@@ -3,53 +3,68 @@ use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize)]
-struct OllamaRequest {
-    model: String,
+struct ChatRequest {
     prompt: String,
-    stream: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    temperature: Option<f32>,
 }
 
 #[derive(Debug, Deserialize)]
-struct OllamaResponse {
+struct ChatResponse {
+    #[serde(default)]
     response: String,
+    #[serde(default)]
+    text: String,
+    #[serde(default)]
+    content: String,
 }
 
 pub struct LlmClient {
     client: Client,
-    ollama_url: String,
-    model: String,
+    chat_url: String,
 }
 
 impl LlmClient {
-    pub fn new(ollama_url: String, model: String) -> Self {
+    pub fn new(chat_url: String) -> Self {
         Self {
             client: Client::new(),
-            ollama_url,
-            model,
+            chat_url,
         }
     }
 
     pub async fn generate(&self, prompt: &str) -> Result<String> {
-        let url = format!("{}/api/generate", self.ollama_url);
-        let request = OllamaRequest {
-            model: self.model.clone(),
+        let request = ChatRequest {
             prompt: prompt.to_string(),
-            stream: false,
+            temperature: Some(0.7),
         };
 
         let response = self
             .client
-            .post(&url)
+            .post(&self.chat_url)
             .json(&request)
             .send()
             .await?;
 
         if !response.status().is_success() {
-            anyhow::bail!("Ollama API error: {}", response.status());
+            let status = response.status();
+            let error_text = response.text().await.unwrap_or_default();
+            anyhow::bail!("Chat API error {}: {}", status, error_text);
         }
 
-        let llm_response: OllamaResponse = response.json().await?;
-        Ok(llm_response.response)
+        let chat_response: ChatResponse = response.json().await?;
+        
+        // Try different possible response fields
+        let text = if !chat_response.response.is_empty() {
+            chat_response.response
+        } else if !chat_response.text.is_empty() {
+            chat_response.text
+        } else if !chat_response.content.is_empty() {
+            chat_response.content
+        } else {
+            anyhow::bail!("Empty response from chat API")
+        };
+        
+        Ok(text)
     }
 
     pub fn build_rag_prompt(
