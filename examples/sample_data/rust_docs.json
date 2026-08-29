@@ -1,0 +1,37 @@
+[
+  {
+    "id": "rust-ownership",
+    "title": "Ownership in Rust",
+    "category": "core-concepts",
+    "content": "Ownership is Rust's most unique feature. It enables Rust to make memory safety guarantees without needing a garbage collector. The ownership rules are: each value in Rust has a variable that's called its owner, there can only be one owner at a time, and when the owner goes out of scope, the value will be dropped.",
+    "tags": ["ownership", "memory", "safety"]
+  },
+  {
+    "id": "rust-borrowing",
+    "title": "Borrowing and References",
+    "category": "core-concepts",
+    "content": "Borrowing allows you to reference a value without taking ownership. References are immutable by default. You can have either one mutable reference or any number of immutable references to a particular piece of data in a particular scope. References must always be valid.",
+    "tags": ["borrowing", "references", "memory"]
+  },
+  {
+    "id": "rust-lifetimes",
+    "title": "Understanding Lifetimes",
+    "category": "advanced",
+    "content": "Lifetimes are Rust's way of ensuring that references are valid for as long as we need them to be. Every reference in Rust has a lifetime, which is the scope for which that reference is valid. Most of the time, lifetimes are implicit and inferred. We must annotate lifetimes when the lifetimes of references could be related in different ways.",
+    "tags": ["lifetimes", "references", "advanced"]
+  },
+  {
+    "id": "rust-traits",
+    "title": "Traits and Generics",
+    "category": "type-system",
+    "content": "Traits define shared behavior in an abstract way. You can use trait bounds to specify that a generic type can be any type that has certain behavior. Traits are similar to interfaces in other languages. Generics allow you to write code that works with multiple types while maintaining type safety.",
+    "tags": ["traits", "generics", "polymorphism"]
+  },
+  {
+    "id": "rust-error-handling",
+    "title": "Error Handling with Result",
+    "category": "best-practices",
+    "content": "Rust groups errors into two major categories: recoverable and unrecoverable errors. For recoverable errors, we use Result<T, E>, and for unrecoverable errors, we have the panic! macro. The Result enum has two variants: Ok and Err. This approach encourages you to handle errors explicitly.",
+    "tags": ["errors", "result", "panic"]
+  }
+]

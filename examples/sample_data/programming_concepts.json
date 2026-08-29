@@ -1,0 +1,26 @@
+[
+  {
+    "id": "async-programming",
+    "title": "Asynchronous Programming",
+    "category": "concurrency",
+    "content": "Asynchronous programming allows programs to work on multiple tasks concurrently without blocking. In Rust, async/await syntax provides a way to write asynchronous code that looks and behaves like synchronous code. The Future trait represents a value that may not be available yet.",
+    "difficulty": "intermediate",
+    "related_topics": ["tokio", "async-std", "futures"]
+  },
+  {
+    "id": "pattern-matching",
+    "title": "Pattern Matching",
+    "category": "language-features",
+    "content": "Pattern matching is a powerful control flow construct in Rust that allows you to compare a value against a series of patterns and execute code based on which pattern matches. The match expression must be exhaustive, meaning all possible cases must be handled.",
+    "difficulty": "beginner",
+    "related_topics": ["enums", "control-flow", "if-let"]
+  },
+  {
+    "id": "zero-cost-abstractions",
+    "title": "Zero-Cost Abstractions",
+    "category": "performance",
+    "content": "Zero-cost abstractions mean that the abstractions you use in Rust have no runtime overhead. The compiler optimizes your code so that high-level constructs compile down to the same machine code as if you wrote low-level code manually. This is one of Rust's key design principles.",
+    "difficulty": "advanced",
+    "related_topics": ["optimization", "compiler", "performance"]
+  }
+]
