@@ -58,11 +58,11 @@ impl RagSystem {
             }
         }
 
-        println!("\n" + "=".repeat(60));
+        println!("\n{}", "=".repeat(60));
         println!("✓ Indexing complete!");
         println!("  Files processed: {}", file_count);
         println!("  Total documents: {}", documents.len());
-        println!("=".repeat(60));
+        println!("{}", "=".repeat(60));
         
         self.store.add_documents(documents);
         self.store.save(&self.config.storage_path)?;
@@ -192,9 +192,9 @@ impl RagSystem {
             return Ok(());
         }
 
-        println!("\n" + "=".repeat(80));
+        println!("\n{}", "=".repeat(80));
         println!("INDEXED DOCUMENTS ({} total)", docs.len());
-        println!("=".repeat(80));
+        println!("{}", "=".repeat(80));
 
         for (i, doc) in docs.iter().enumerate() {
             println!("\n[{}] ID: {}", i + 1, doc.id);
@@ -223,9 +223,9 @@ impl RagSystem {
             }
         }
 
-        println!("\n" + "=".repeat(80));
+        println!("\n{}", "=".repeat(80));
         println!("Tip: Use --full flag to see complete document contents");
-        println!("=".repeat(80) + "\n");
+        println!("{}\n", "=".repeat(80));
 
         Ok(())
     }
@@ -238,9 +238,9 @@ impl RagSystem {
             return Ok(());
         }
 
-        println!("\n" + "=".repeat(80));
+        println!("\n{}", "=".repeat(80));
         println!("SEARCH DEBUG: '{}'", query);
-        println!("=".repeat(80));
+        println!("{}", "=".repeat(80));
 
         println!("\n[1/2] Generating query embedding...");
         let query_embedding = self.embedder.generate_embedding(query).await?;
@@ -259,9 +259,9 @@ impl RagSystem {
 
         scored_docs.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 
-        println!("\n" + "=".repeat(80));
+        println!("\n{}", "=".repeat(80));
         println!("TOP {} MATCHES", top_k.min(scored_docs.len()));
-        println!("=".repeat(80));
+        println!("{}", "=".repeat(80));
 
         for (i, (doc, score)) in scored_docs.iter().take(top_k).enumerate() {
             println!("\n[Match #{}] Similarity: {:.4}", i + 1, score);
@@ -289,9 +289,9 @@ impl RagSystem {
             }
         }
 
-        println!("\n" + "=".repeat(80));
+        println!("\n{}", "=".repeat(80));
         println!("Note: This shows raw search results without LLM generation");
-        println!("=".repeat(80) + "\n");
+        println!("{}\n", "=".repeat(80));
 
         Ok(())
     }
@@ -301,9 +301,9 @@ impl RagSystem {
         
         match docs.iter().find(|d| d.id == id) {
             Some(doc) => {
-                println!("\n" + "=".repeat(80));
+                println!("\n{}", "=".repeat(80));
                 println!("DOCUMENT DETAILS");
-                println!("=".repeat(80));
+                println!("{}", "=".repeat(80));
                 println!("\nID: {}", doc.id);
                 println!("Content length: {} chars", doc.content.len());
                 println!("Embedding dimension: {}", 
@@ -320,7 +320,7 @@ impl RagSystem {
                 println!("\n--- FULL CONTENT ---");
                 println!("{}", doc.content);
                 println!("--- END ---");
-                println!("\n" + "=".repeat(80) + "\n");
+                println!("\n{}\n", "=".repeat(80));
             }
             None => {
                 println!("\n✗ Document not found: {}", id);
@@ -352,9 +352,9 @@ impl RagSystem {
             .map(|e| e.len())
             .unwrap_or(0);
 
-        println!("\n" + "=".repeat(80));
+        println!("\n{}", "=".repeat(80));
         println!("RAG SYSTEM STATISTICS");
-        println!("=".repeat(80));
+        println!("{}", "=".repeat(80));
         println!("\nStorage:");
         println!("  Documents path: {:?}", self.config.storage_path);
         println!("  Embeddings path: {:?}", self.config.embeddings_path);
@@ -378,7 +378,7 @@ impl RagSystem {
             println!("  [{}] {}", i + 1, doc.id);
         }
 
-        println!("\n" + "=".repeat(80) + "\n");
+        println!("\n{}\n", "=".repeat(80));
 
         Ok(())
     }
